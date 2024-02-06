@@ -1,18 +1,71 @@
 var aws = {}
 
-var ec2, elasticBeanstalk, autoScaling, elb, lambda, ecs, eks, ecr, fargate,
+var awsGlobalInfra, caf, waf, sysops, support, launchTemplate
+
+var ec2, elasticBeanstalk, autoScaling, elb, lambda, ecs, eks, ecr, fargate, 
 rds, aurora, redshift, dynamo, dms
 
 var managementConsole, cli, cloudWatch, cloudTrail, autoScaling, trustedAdvisor, config, wellArchitectedFrameworkTool, 
-prometheus, systemManager, cloudFormation, opswork
+prometheus, systemManager, cloudFormation, opswork, stepFunction
 
 var vpc, route53, cloudFront, clientVPN, directConnect, transitGateway
 
 var iam, organisations, cognito, artifact, shield, guardDuty, inspector, cloudhsm, kms, acm, macie, singleSign, workspaces
 
-var costandusage, budgets, costexplorer
+var costandusage, budgets, costexplorer, billing
 
-var s3, ebs, efs, fsx, storageGateway
+var s3, ebs, efs, fsx, storageGateway, instanceStore, glacier, snowFamily, transferFamily, dataSync
+
+awsGlobalInfra = [
+"AWS Availability zones are a group of data centers designed to be fault tolerant." , 
+
+"AWS Regions is just a group of availability zones with proximity. (Chosen based on compliance requirements or to reduce latency. Some AWS Services can be region specific.)" ,
+
+"PoP (imagine like cell towers for ISP’s) are edge locations and regional edge caches (access infrequent data) where end users access AWS services through either the Amazon CloudFront (CDN) or the Amazon Route 53 services (DNS) primarily to reduce latency.", 
+
+"AWS Global Infrastructure is designed to be elastic/scalable(multi-regions), fault tolerant (availability zones) and highly available (PoP).", 
+
+"AWS Shared responsibility emulates that Amazon is responsible for the security of the cloud, while the user is responsible for the security in the cloud depending on the cloud service model used (Iaas, Paas, Saas)."  ]
+caf = [
+	"6 perspective: Business, Governance, People, Platform, Operations, Security"]
+waf = [
+	"architectural best practices for designing and running workloads in the AWS Cloud): operational excellence, security, reliability, performance efficiency, cost optimization, and sustainability.",  
+	"CAF's technical aspect",
+	"Well-Architected design principles" ,
+	"Stop guessing your capacity needs. ",
+
+	"Test systems at the production scale. ",
+
+	"Automate to make architectural experimentation easier.  ",
+
+	"Provide for evolutionary architectures. (plan for future evolve) ",
+
+	"Drive architectures by using data. (form arch. Based on data) " ,
+
+	"Improve through game (fault simulation) days. "]
+sysops = [
+	"Systems operations (SysOps) automating deployment, administration, and monitoring of systems and network resources with scripts, programs, or templates." ,
+
+	"Tasks required to build (create), test, deploy, monitor, maintain, and safeguard complex computing systems." ,
+
+	"yaml, json, templates: CloudFormation, OpsWork, Ansible, Terraform, Chef, Puppet "]
+support = [
+	"AWS account teams serve as a first point of contact to help guide you through your deployment and implementation. These teams point you toward the right resources to resolve security issues that you might encounter. ",
+
+	"AWS support plans. Basic –Customer service and communities –AWS Trusted Advisor –AWS Persona Health Dashboard",
+
+	"•three tiers of support:–AWS Developer Support plan –AWS Business Support plan –AWS Enterprise Support plan ",
+
+	"The AWS Partner Network (APN) is a group of cloud software and service vendors who can assist customers with their security and compliance needs.", 	  
+
+	"AWS advisories and bulletins: documents provide information on current vulnerabilities and threats"]
+launchTemplate = [
+	"EC Launch Templates" +
+
+	"Contains configuration information to launch an EC2 instance. Store launch parameters: –Amazon Machine Image (AMI) ID–Instance type–Subnet–Key pair" ,
+	"Features: Enable you to preselect EC2 launch options. Supports versioning. (default template => version 1)" ,
+	"Benefits:•Streamline and simplify the launch process for Amazon EC2 Auto Scaling, Spot Fleet, Spot Instances, and On-Demand Instances. ",
+	"•Reduce the number of steps that are required to create an instance by capturing all launch parameters within one resource. •Make it easier to implement standards and best practices. As a result, you realize the following additional benefits. •Help in managing costs•Improve security•Minimize the risk of deployment errors"]
 
 ec2 = [
 "nine key decisions to make when you create an EC2 instance (Launch Instance Wizard) ",
@@ -315,6 +368,18 @@ elb = [
 	"Creating ELBs with CLI (AWS Management Console can be used): " +
 
 	"=>(create-load-balancer, specify two subnets in different AZs)(create-target-group, specify instances vpc)(register-targets)(create-listener)(describe-target-health) "]
+lambda = [
+	"Lambda is a fully managed service for serverless compute.",
+
+	"Lamda WorkFlow: Upload your code to Lambda, and Lambda takes care of everything that is required to run and scale your code with high availability.2.Set up your code to invoke from other AWS services, or invoke your code directly from any web or mobile application, or HTTP endpoint.3.AWS Lambda runs your code only when invoked. You pay only for the compute time that you consume. You pay nothing when your code is not running.",
+
+	"The runtime of a Lambda function is limited to a maximum of 15 minutes.",
+
+	"Deploying Lambda Functions: 1. Define a handler class in the code for the function. 2. Create the Lambda function by using the AWS Management Console or the AWS Command Line Interface (AWS CLI). 3. Create and assign an AWS Identity and Access Management (IAM) role to the function. Include permissions to access the AWS services that are required. 4. Upload the code for the function. 5. Invoke the function to test it.6.After you deploy the function to production, monitor it by using Amazon CloudWatch",
+
+	"You can configure your Lambda function to pull in additional code and content in the form of layers. A Lambda layer is a .zip archive that contains libraries, data, configuration files, or a custom runtime. By using layers, keep your deployment package small, make development easier, and avoid errors that might occur, such as package dependencies with your function code." ,
+
+	"Lambda Quotas: A function can use up to five layers at a time. The total unzipped size of the function and all its layers cannot exceed the unzipped deployment package size limit of 250 MB. The maximum memory allocation for a single Lambda function is 10 GB. By default, Lambda can handle up to 1,000 concurrent invocations in a single Region." ]
 rds = [
 	"Backup Options => Snapshots => Manual, Automatic => First snapshot (full data); Subsequent snapshots (remaining/increment data) ",
 
@@ -338,6 +403,10 @@ aurora = [
 	"An Auroa Cluster is made up of a primary instance (for crud operations) and up to 15 replicas (for read ops) ",
 
 	"An Aurora cluster volume virtual database storage volume spanning multiple Availability Zones. Each Availability Zone has a copy of the DB cluster data."  ]
+redshift = [
+	"Amazon Redshift is a fully managed data warehouse service in the cloud. •You can use it to run complex analytic queries against petabytes of structured data. •It uses sophisticated query optimization, columnar storage on high-performance local disks, and parallel query execution.",
+
+	"Features: Management, Security, Compatibility"]
 dynamo = [
 	"fully managed, key-value NoSQL database, serverless (lambda runs for requests, due to its flexibility and horizontal scaling attribute) ",
 
@@ -354,6 +423,18 @@ dynamo = [
 "DynamoDB automatically adds new partitions when existing partitions are filled.", 
 
 "Items are placed in partition based on item's primary key.(put key in a partition function)"]
+dms = [
+	"AWS DMS is a service that migrates databases to Amazon Web Services (AWS) quickly and securely.",
+
+"Features: Migrate data to and from most databases. Keep the source database operational during migration. Keep applications live or running during the migration. Conduct syntax migration conversion. Replicate data near-continuously. Consolidate databases. Deploy to multiple Availability Zones for high availability and failover support.",
+
+	"Flow: Source_Database => Source_EndPoint => Replication_Task(instance) => Target_Enpoint => Target_Database",
+
+	"DMS works with multiple targets and sources",
+
+	"Homogeneous database migrations, the source and target database engines are the same or are compatible.",
+
+	"Heterogeneous database migrations, the source and target database engines are not the same or are incompatible. Uses AWS SCT to converts your existing database schema and code to target compatible schema"]
 
 cli=[
 	"Use the aws configure command to specify default settings in AWS CLI. ",
@@ -375,7 +456,31 @@ cli=[
 	"--filter option is used to restrict the result set filtered on the server side" ,
 
 	"--dry-run option: This option checks for required permissions without making a request "]
+stepFunction = [
+	"Amazon API Gateway handles all the tasks that are involved in accepting and processing concurrent API calls at scale. These tasks include traffic management, authorization and access control, monitoring, and API version management. You pay for only the API calls that you receive and the amount of data that is transferred out.",
 
+	"API Gateway provides you with a dashboard to visually monitor calls to your services so that you can see performance metrics.",
+
+	"API Gateway works with AWS Lambdaso to create serverless APIs: •First, you create REST APIs with API Gateway. •Then, your mobile and web applications can use these APIs to call publicly available AWS services through the code that you run in Lambda. With API Gateway, you can create RESTful resource-based APIs. Then, you can use the data transformation capabilities to generate the requests in the language that your target services expect",
+
+	"Efficient API development •Performance at any scale •Cost savings at scale •Monitoring •Flexible security controls •RESTful API options"]
+
+route53 = [
+	"Route 53 is a scalable Domain Name System (DNS) web service.",
+
+"Use cases: Register or transfer a domain name.•Resolve domain names to IP addresses.•Connect to infrastructure.•Distribute traffic across Regions.(outside aws infra as well)•Support high availability and lower latency",
+
+"Route 53 + ELB: By default, AWS assigns a hostname to your load balancer that resolves to a set of IP addresses. Assign your own hostname by using an alias resource record set. Create a Canonical Name Record (CNAME) that points to your load balancer.",
+
+"Routing policies: 1. Simple routing policy (to single resource) 2.Weighted routing policy (to multiple resources) 3.Latency routing policy (to region with low latency) 4. Failover routing policy (configure active/passive setup) 5.Geolocation routing policy (based on DNS query location) 6.Geoproximity routing policy (resource location: traffic flow to an AWS Region, or latitude and longitude) 7.Multivalue answer routing policy (respond to DNS queries => up to 8 healthy records) 8.IP-based routing policy (based on IP address and user location)"]
+cloudFront = [
+	"CloudFront is a web service that speeds up the distribution of static and dynamic web content to users through a worldwide network of data centers called edge locations (Point of presence and regional caches) connected to AWS Regions through the AWS network backbone",
+
+"Features: •Security(TLS/SSL, Compliant with Standards) •Availability •Edge computing •Real-time metrics and logging •Continuous deployment(Active/passive or Blue/Green) •Cost-effectiveness",
+
+"CloudFront WorkFlow: 1.A user accesses your website or application and sends a request for an object. 2. DNS routes the request to the CloudFront POP (edge location) that can best serve the request—typically the nearest CloudFront POP in terms of latency and routes the request to that edge location. 3.CloudFront checks its cache for the requested object. If the object is in the cache, CloudFront returns it to the user. else, CloudFront does the following: A.CloudFront compares the request with the specifications in your distribution and forwards the request to your origin server for the corresponding object (for example, to your S3 bucket or your HTTP server). B. The origin server sends the object back to the edge location. C. As soon as the first byte arrives from the origin, CloudFront begins to forward the object to the user. CloudFront also adds the object to the cache for the next time someone requests it.",
+
+"CloudFront costs are calculated based on geographic region, number and type of requests, and the amount of data that is transferred out."]
 cloudTrail = [
 	"It continuously monitors account activity and logs hierarchically in S3 bucket you specify",  
 
@@ -447,13 +552,22 @@ opswork = [
 s3 = [
 "Amazon S3 storage classes, stores data in at least three Availability Zones aside one zone specific storage classes." ,
 
-"Stores data us unique objects (<= 5TB) in buckets => (unique == can't be modified, re upload)." , 
+"Stores data us unique objects (<= 5TB) in buckets => (unique == can't be modified, re upload as new versions(S3 versioning)).-" , 
 
 "S3 abides by the law of least privilege with 11 .9’s of durability." ,
 
 "S3 stores object redundantly in one region to make it fault tolerant and accessed globally, hence bucket names should be unique on the internet for granular (unique) access."  ,
 
 "Naming => region/bucket-name/key  https://s3-ap-northeast-1.amazonaws.com/[bucket name]/[Preview2.mp4]" ,
+
+"Feature: Purpose or Benefit => How to Use It", 
+"Object lifecycle management: Manage your objects so that they are stored cost-effectively throughout their lifecycle. => Create a lifecycle configuration with rules that define when objects should transition to another storage class and when objects should be deleted.",
+"Presigned object URL: Share a private object with a user who does not have AWS security credentials or permissions. => Generate a pre-signed object URL programmatically and provide it to the recipient to access the object.",
+"Cross-origin resource sharing (CORS): Allow an S3 bucket that hosts a static website to support CORS by supporting many origins to one bucket.=> Create a CORS configuration on the bucket with rules that identify the authorized origins and HTTP operations.",
+
+"With S3 Object Lock, you can prevent an object from being deleted or overwritten for a fixed amount of time or indefinitely",
+
+"You can manage object retention(Modes: Government, Compliance) in two ways: Retention periods, Legal holds",
 
 "Amazon S3 Types Naming:  Amazon S3 <-zone type-> <-access type->" ,
 
@@ -470,6 +584,72 @@ s3 = [
 "Amazon S3 Glacier: Ranging availabilty (3 retrieval options -> minutes to hours) for less frequently accessed data." , 
 
 "Amazon S3 Glacier Deep Archive: long-term retention and digital preservation for data that might be accessed once or twice in a year. These objects can be restored within 12 hours. "]
+ebs = [
+	"Amazon EBS provides persistent block storage volumes. Each EBS volume is automatically replicated within its Availability Zone. With Amazon EBS, you can scale your usage up or down within minutes.",
+
+	"Solid state drives (SSDs): Provisioned IOPS SSD. General Purpose SSD volumes. Hard disk drives (HDDs): Throughput Optimized HDD. Cold HDDVolume",
+
+	"Cost calculated by GB per month and provisioned IOPS per month",
+
+	"Use Cases (SSD): Provisioned IOPS => I/O-intensive workloads, Relational databases, NoSQL databases. General Purpose => Recommended option for most workloads, System boot volumes, Virtual desktops, Low-latency interactive apps, Development and test environments",
+
+	"Use Cases (HDD): Throughput-optimized => Streaming workloads that require consistent and fast throughput at a low price, Big data, Data warehouses, Log processing, Not a boot volume Cold => Throughput-oriented storage for large volumes of data that are infrequently accessed, Scenarios where the lowest storage cost is important, Not a boot volume"]
+efs = [
+	"Amazon EFS is scalable, fully managed, elastic Network File System (NFS) storage for use with AWS Cloud services and on-premises resources.",
+
+	"Features. Amazon EFS is a petabyte-scale, low-latency file system that does the following: Supports NFS, Is compatible with multiple AWS services, Is compatible with all Linux-based instances and servers, Uses tags",
+
+	"High availability, Dynamic elasticity, Fully managed",
+
+	"Storage classes => Standard storage classes:EFS Standard, EFS Standard Infrequent Access (Standard-IA) •One Zone storage classes => EFS One Zone, EFS One Zone-IA (One Zone-IA)",
+
+	"Performance modes => General Purpose, Max I/O. Throughput modes => Elastic Throughput, Bursting Throughput, Provisioned Throughput",
+
+	"Use Cases => Home directories, File system for enterprise applications, Application testing and development, Database backups, Web serving and content management, Media workflows, Big data analytics"]
+storageGateway = [
+	"Storage Gateway is a hybrid storage service that enables on-premises applications to use AWS Cloud storage. You can use Storage Gateway for backup and archiving, disaster recovery (DR), cloud data processing, storage tiering, and migration. Storage Gateway supports file, volume, and tape interfaces.",
+
+	"Features: Provides durable storage of on-premises data in the AWS Cloud. Uses standard storage protocols. Provides fully managed caching. Transfers data in an optimized and secure manner. Can be implemented on-premises as a virtual machine (VM) or a hardware device",
+
+	"Amazon S3 File Gateway: Native file access to data stored in Amazon Simple Storage Service (Amazon S3). Amazon FSx File Gateway: Native file access to file shares on FSx for Windows File Server. Volume Gateway: Access to block storage volumes backed up as Amazon Elastic Block Store (Amazon EBS) snapshots. Tape Gateway: Access to a virtual tape library that uses Amazon S3 archive tiers for long-term retention",
+
+	"Storage Gateway use cases: Move backups and archives to the cloud. Reduce on-premises storage with cloud-backed file shares. Provide on-premises applications with low-latency access to data that is stored in AWS. Provide on-premises applications with seamless use of AWS storage."]
+instanceStore = [
+	"Instance stores provide temporary block-level storage for your EC2 instance. This storage is located on disks that are physically attached to the host computer. (low latency)",
+
+"Instance store data persists for only the lifetime of its associated instance. You cannot create or destroy instance store volumes independently from their instances. You can control whether instance stores are exposed to the EC2 instance or what device name is used",
+
+"Features are available for many instance types but not all instance types. The number, size, and type—such as hard disk drive (HDD) compared with solid-state drive (SSD)—differ by instance type. Note the following information about mounting an instance: An instance store must be mounted before you can access it. Mounting occurs automatically or manually on Linux depending on the instance type.",
+
+"Instance store volumes are used for temporary storage of information that is continually changing, such as the following: Buffers, Caches, Scratch data, Other temporary content. Instance store volumes are used for data that is replicated across a fleet of instances, such as a load-balanced pool of web servers"]
+glacier = [
+	"Amazon S3 Glacier is a storage service purpose-built for data archiving. It provides high performance, flexible retrieval, and low-cost archive storage in the cloud.",
+
+	"S3 Glacier Instant Retrieval. Rarely accessed but requires retrieval in milliseconds; S3 Glacier Flexible Retrieval => data archived accessed 1–2 times per year and is retrieved asynchronously; S3 Glacier Deep Archive long-term retention and digital preservation accessed 1–2 times per year",
+
+	"A vault is a container for storing archives. Unique URI form:https://region-specific-endpoint/account-id/vaults/vault-name",
+
+	"An archive is any data, such as a photo, video, or document. Unique URI form:https://region-specific-endpoint/account-id/vaults/vault-name/archives/archive-id",
+
+	"An Amazon S3 Glacier job can retrieve an archive or get an inventory of a vault. Unique URI form:https://region-specific-endpoint/account-id/vaults/vault-name/jobs/job-id",
+
+	"An Amazon S3 Glacier notification configuration can notify you when a job is completed. Unique URI form:https://region-specific-endpoint/account-id/vaults/vault-name/notification-configuration",
+
+	"Amazon S3 Glacier provides three archive retrieval options: Expedited: 1–5 minutes, Standard: 3–5 hours, Bulk: 5–12 hours",
+
+	"Security: IAM. Data encryption with AES-256 by default. S3 Glacier Key management",
+
+	"Access Options: AWS Management Console, Amazon S3 Glacier REST API, Java or .NET AWS SDKs, Amazon S3 lifecycle policies"]
+snowFamily = [
+	"AWS Snow Family: Devices Sent to you to help migrate data from remote locations. (AWS Snowball < AWS Snowball Edge < AWS SnowconeAWS < Snowmobile)"]
+transferFamily = [
+	"AWS Transfer Family is a secure transfer service that you can use to transfer files into and out of AWS storage services. The Transfer Family supports transferring data from or to the following AWS storage services: Amazon Simple Storage Service (Amazon S3) storage buckets. Amazon Elastic File System (Amazon EFS). Network File System (NFS) file systems",
+
+	"AWS Transfer for SFTP•Retains existing workflows•Stores data in an S3 bucket•Connects directly with your identity provider systems"]
+dataSync = [
+	"DataSync is an online data transfer service that automates and accelerates the moving of data between on-premises storage systems and AWS storage services. It also moves data between AWS storage services.",
+
+	"Features. Synchronizes between on-premises and AWS. Is efficient and fast. Is a managed service. Connects over the internet or AWS Direct Connect. Includes AWS DataSync Agent (NFS protocol)"]
 
 iam = [
 "Centrally manage authentication and access to Amazon Web Services (AWS) resources." ,
@@ -548,6 +728,17 @@ workspaces = [
 
 "Customers can deploy and manage applications for their Workspaces by using Amazon Workspaces Application Manager (Amazon WAM)"]
 
+
+aws["Infrastructure and Deployment"] = [
+	
+	["AWS Global Infrastracture", awsGlobalInfra],
+
+	["AWS Cloud Adoption Framework (Cloud Organizational Dpmts)", caf],
+
+	["AWS Well Architecture Framework", waf],
+
+	["AWS Launch Template", launchTemplate]]
+
 aws["Compute"] = [ 
 
 	["EC2 (VM’s on the cloud)", ec2] ,
@@ -604,7 +795,9 @@ aws["Management_and_Governance"] = [
 
 	["AWS CloudFormation", cloudFormation],
 	
-	["Amazon Opswork", opswork]]
+	["Amazon Opswork", opswork],
+
+	["AWS Step Functions", stepFunction]]
 
 aws["Networking_and_Content_Delivery"] = [ 
 
@@ -644,13 +837,9 @@ aws["Security,_Identity,_and_Compliance"] = [
 
 ["Amazon Macie", macie],
 
-["Amazon Signle Sign On", singleSign],
+["Amazon Single Sign On", singleSign],
 
-["Amzon WorkSpaces", workspaces],
-
-["AWS Cloud Formation", cloudFormation],
-
-["Amazon OpsWorks", opswork]]
+["Amzon WorkSpaces", workspaces]]
 
 aws["AWS_Cost_Management"] = [ 
 
@@ -658,18 +847,23 @@ aws["AWS_Cost_Management"] = [
 
 ["AWS Budgets (get alerted on usage per budget)", budgets] , 
 
-["AWS Cost Explorer (visualize, and manage AWS usage)", costexplorer] , ]
+["AWS Cost Explorer (visualize, and manage AWS usage)", costexplorer] , 
+["AWS Billing Dashboard", billing]]
 
 aws["Storage"] = [
-["S3 (these are just buckets)" , s3],
+["S3 (these are just storage buckets)" , s3],
 
 ["EBS (think hard drives)", ebs],
 
-["EFS (think files)", efs],
+["EFS (think dropbox, onedrive -  network file sharing)", efs],
 
 ["FSx", fsx] ,
 
-["Storage Gateway" , storageGateway] ,]
+["Storage Gateway" , storageGateway],
+
+["EC2 Instance Store (think RAM)", instanceStore],
+
+["S3 Glacier (Archiving/Backup)", glacier]]
 
 function renderJs () {
 const bodyElement = document.getElementsByTagName("BODY")[0];
