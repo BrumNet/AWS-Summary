@@ -1,20 +1,36 @@
+//todos: Containers, AMI Building Strategy
+
 var aws = {}
 
 var awsGlobalInfra, caf, waf, sysops, support, launchTemplate
 
-var ec2, elasticBeanstalk, autoScaling, elb, lambda, ecs, eks, ecr, fargate, 
-rds, aurora, redshift, dynamo, dms
+//handles request
+var ec2, elasticBeanstalk, ec2autoScaling, elb, lambda, ecs, eks, fargate, lambdaSnapStart, serverlessAppRepo, lightsail, appRunner, batch, simspace, vmware, ec2ImageBuilder, autoScaling
 
-var managementConsole, cli, cloudWatch, cloudTrail, autoScaling, trustedAdvisor, config, wellArchitectedFrameworkTool, 
-prometheus, systemManager, cloudFormation, opswork, stepFunction
+var athena, dataExchange, amazonemr, glue, msk, openSearch, xray, cloudSearch, dataZone, kinesis, quickSight, finspace, cleanRooms, sparkonAthena, lakeFormation
 
-var vpc, route53, cloudFront, clientVPN, directConnect, transitGateway
+var rds, aurora, redshift, dynamo, dms, qldb, neptune, documentDB, keyspaces, timestream
 
-var iam, organisations, cognito, artifact, shield, guardDuty, inspector, cloudhsm, kms, acm, macie, singleSign, workspaces
+//setups and configs
+var managementConsole, cli, cloudWatch, cloudTrail, awsScaling, trustedAdvisor, config, wellArchitectedFrameworkTool, controlTower,
+prometheus, systemManager, cloudFormation, opswork, stepFunction, activate, shell, appconfig, resourceManager,
+codeCommit, codeDeploy, CodePipeline, codeBuild //<<<<<<<<<<<<<<<
 
+//resource availability
+var vpc, route53, cloudFront, clientVPN, directConnect, transitGateway, apiGateway, localZones, outpost, wavelength, eventbridge, connect, siteToSiteVPN, accelerator, vpcpeering, vpclattice, appMesh, cloudmap, private5G, verifiedAccess
+
+//security
+var iam, organisations, cognito, artifact, shield, guardDuty, inspector, cloudhsm, kms, acm, macie, singleSign, workspaces, a_waf, firewallManager, secretManager, securityHub, directoryService, verifiedPermissions, guardDutyECS, resourceAccessManager, detective, securityLake
+
+//cost
 var costandusage, budgets, costexplorer, billing
 
-var s3, ebs, efs, fsx, storageGateway, instanceStore, glacier, snowFamily, transferFamily, dataSync
+//storage
+var s3, ebs, efs, fsx, storageGateway, instanceStore, glacier, snowFamily, transferFamily, dataSync, codeArtefact, ecr, awsBackup, filegateway, volumegateway, ebsSnaps, efsarchive, aws_DisasterRecovery
+
+var todo = [/*
+
+*/]
 
 awsGlobalInfra = [
 "AWS Availability zones are a group of data centers designed to be fault tolerant." , 
@@ -27,7 +43,11 @@ awsGlobalInfra = [
 
 "AWS Shared responsibility emulates that Amazon is responsible for the security of the cloud, while the user is responsible for the security in the cloud depending on the cloud service model used (Iaas, Paas, Saas)."  ]
 caf = [
-	"6 perspective: Business, Governance, People, Platform, Operations, Security"]
+	"6 perspective: Business, Governance, People, Platform, Operations, Security",
+
+	"-Reduce business risk -Improve environmental, social, and governance performance -Grow revenue -Increase operational efficiency.",
+
+	"-Envision Phase -Align Phase -Launch Phase -Scale Phase"]
 waf = [
 	"architectural best practices for designing and running workloads in the AWS Cloud): operational excellence, security, reliability, performance efficiency, cost optimization, and sustainability.",  
 	"CAF's technical aspect",
@@ -50,12 +70,31 @@ sysops = [
 
 	"yaml, json, templates: CloudFormation, OpsWork, Ansible, Terraform, Chef, Puppet "]
 support = [
+	"AWS Technical Support covers how to find resources, Best practices, Troubleshooting, Issues, Problems detection",
+
+	"Benefits: Build faster, Mitigate risks, Management resources, Proactively monitor your environment and automate remediation., Get expert help",
+
 	"AWS account teams serve as a first point of contact to help guide you through your deployment and implementation. These teams point you toward the right resources to resolve security issues that you might encounter. ",
 
-	"AWS support plans. Basic –Customer service and communities –AWS Trusted Advisor –AWS Persona Health Dashboard",
+	
+	"Technologies: –AWS Trusted Advisor –AWS Persona Health Dashboard (Provides alerts and remediation guidance if AWS experiences events that might impact customers.) -AWS Health API (Provides programmatic access to the AWS Health information that is in the Personal Health dashboard). ",
 
+	"Programs: AWS Infrastructure Event Management(IEM) provides guidance for architecture and scaling. They also offer operational support during planned events, such as shopping holidays. - Architectural reviews with AWS solutions architects are included with Enterprise Support.–AWS Well-Architected helps cloud architects build secure, resilient, and efficient infrastructure for their applications and workloads.•Proactive services that are delivered by AWS Support experts are included with Enterprise Support.",
+	
 	"•three tiers of support:–AWS Developer Support plan –AWS Business Support plan –AWS Enterprise Support plan ",
 
+	"Plan Service Levels: C- critical, U- Urgent, H- High, N- Normal, L- Low",
+	
+	"AWS support plans.",
+
+	"Basic Support: Resource center access, Service Health dashboard, product FAQs, discussion forums, AWS whitepapers(AWS whitepapers are a collection of technical documents that outline many topics that are relevant to AWS, like architecting best practices, security best practices, cloud computing economics, and serverless architecture.), Persona Health Dashboard and support for health checks",
+
+	"Developer Support (NL): Support for early development on AWS; Business-hours access through email; 1 contact, Unlimited cases ",
+
+	"Business Support (UHNL): Support for customers that run production workloads; 24/7 access through email, chat, and phone; Unlimited contacts, Unlimited cases",
+
+	"Enterprise Support (CUHNL): Support for customers that run business and mission-critical workloads; 24/7 access through email, chat, and phone; Unlimited contacts, Unlimited cases; Technical Account Manager (TAM); Architectural Reviews; Proactive Services (Concierge, ...)",
+	
 	"The AWS Partner Network (APN) is a group of cloud software and service vendors who can assist customers with their security and compliance needs.", 	  
 
 	"AWS advisories and bulletins: documents provide information on current vulnerabilities and threats"]
@@ -254,70 +293,70 @@ elasticBeanstalk = [
 
 	"You can also adjust load balancer options and access your server log files.",
 	"Passenger(web application server for vertical scaling) and Puma(web application server for horizontal scaling) "]
-autoScaling = [
-"Auto Scaling" ,
+ec2autoScaling = [
+	"Auto Scaling" ,
 
-"Scaling is the ability to increase or decrease compute capacity to meet fluctuating demand.  ",
+	"Scaling is the ability to increase or decrease compute capacity to meet fluctuating demand.  ",
 
-"Concepts: Capacity, scaling in or out, Instance health, Termination policy, Launch template   ",
+	"Concepts: Capacity, scaling in or out, Instance health, Termination policy, Launch template   ",
 
-"Amazon EC2 Auto Scaling ensures application availability by automatically launching or terminating EC2 instances based on scaling options (Manual scaling - minimum/maximum capacity, Scheduled scaling - predictable load changes, Dynamic scaling - as traffic changes occur [simple - on scaling adjustment, set - set of scaling adjustments, target tracking- based on metric], Predictive scaling -  machine learning models to predict expected traffic/ec2 usage )  ",
+	"Amazon EC2 Auto Scaling ensures application availability by automatically launching or terminating EC2 instances based on scaling options (Manual scaling - minimum/maximum capacity, Scheduled scaling - predictable load changes, Dynamic scaling - as traffic changes occur [simple - on scaling adjustment, set - set of scaling adjustments, target tracking- based on metric], Predictive scaling -  machine learning models to predict expected traffic/ec2 usage )  ",
 
-"EC2 Cooldown periods can't be specified for step scaling of dynamic scaling  ",
+	"EC2 Cooldown periods can't be specified for step scaling of dynamic scaling  ",
 
-"Predictive: The model needs historical data from at least 1 day to start making predictions. The model is re-evaluated every 24 hours to create a forecast for the next 48 hours (about 2 days). Predictive scaling removes the need for manually adjusting auto scaling parameters over time. You can even use predictive scaling with dynamic scaling. It is not designed to help in situations where spikes in load are not cyclic or predictable  ",
+	"Predictive: The model needs historical data from at least 1 day to start making predictions. The model is re-evaluated every 24 hours to create a forecast for the next 48 hours (about 2 days). Predictive scaling removes the need for manually adjusting auto scaling parameters over time. You can even use predictive scaling with dynamic scaling. It is not designed to help in situations where spikes in load are not cyclic or predictable  ",
 
-  
+	  
 
-"Instance Health Types: (Amazon EC2 status checks and scheduled events (default), Elastic Load Balancing (ELB) health checks, Custom health checks) ", 
+	"Instance Health Types: (Amazon EC2 status checks and scheduled events (default), Elastic Load Balancing (ELB) health checks, Custom health checks) ", 
 
-"Some Factors That Can Affect Instance Health: (Incorrect networking or startup configuration, Exhausted memory, Corrupted file system, Incompatible kernel)  ",
+	"Some Factors That Can Affect Instance Health: (Incorrect networking or startup configuration, Exhausted memory, Corrupted file system, Incompatible kernel)  ",
 
-"Termination policy: determines which instance is terminated when scaling in  ",
+	"Termination policy: determines which instance is terminated when scaling in  ",
 
-"Termination Policy Examples: Default (Availability Zone with the largest number of instances), Oldest instance, newest instance, oldest launch template, Closest to next instance billable hour)  ",
+	"Termination Policy Examples: Default (Availability Zone with the largest number of instances), Oldest instance, newest instance, oldest launch template, Closest to next instance billable hour)  ",
 
-"Lifecycle hooks provide an opportunity to perform a user action before the completion of a scale-in or scale-out event.  ",
+	"Lifecycle hooks provide an opportunity to perform a user action before the completion of a scale-in or scale-out event.  ",
 
-"A launch template specifies and versions instance configuration information (ec2 launch parameters).   ",
+	"A launch template specifies and versions instance configuration information (ec2 launch parameters).   ",
 
-"AWS strongly recommends that you use a launch template rather than launch configurations to create autoscaling groups  ",
+	"AWS strongly recommends that you use a launch template rather than launch configurations to create autoscaling groups  ",
 
-"Auto Scaling [Group] Policies: (How to manage and scale)  ",
+	"Auto Scaling [Group] Policies: (How to manage and scale)  ",
 
-"Auto Scaling Policies: Amazon CloudWatch alarms, Target tracking policy, Scheduled actions  ",
+	"Auto Scaling Policies: Amazon CloudWatch alarms, Target tracking policy, Scheduled actions  ",
 
-"When you create a launch template, all parameters are optional. However, a launch template for an auto scaling group, the ID of the AMI and an instance type are required. If it does not specify an AMI, you cannot add the AMI when you create your auto scaling group.  ",
+	"When you create a launch template, all parameters are optional. However, a launch template for an auto scaling group, the ID of the AMI and an instance type are required. If it does not specify an AMI, you cannot add the AMI when you create your auto scaling group.  ",
 
-"Specify the launch template and the necessary information to configure the EC2 instances in the group.  ",
+	"Specify the launch template and the necessary information to configure the EC2 instances in the group.  ",
 
-"Required configurations: Launch template, Virtual private cloud (VPC), Subnets  ",
+	"Required configurations: Launch template, Virtual private cloud (VPC), Subnets  ",
 
-"Optional configurations: Register instances with a load balancer., Turn on ELB health checks., Turn on monitoring with CloudWatch., Configure group size., Configure scaling policies  ",
+	"Optional configurations: Register instances with a load balancer., Turn on ELB health checks., Turn on monitoring with CloudWatch., Configure group size., Configure scaling policies  ",
 
-  
+	  
 
-"Best practices  ",
+	"Best practices  ",
 
-"Use a 1-minute frequency in CloudWatch metric data collection. (for faster response to load changes)  ",
+	"Use a 1-minute frequency in CloudWatch metric data collection. (for faster response to load changes)  ",
 
-"Turn on auto-scaling group metrics.  ",
+	"Turn on auto-scaling group metrics.  ",
 
-"Avoid burstable performance instance types. (T3 and T2 are designed for CPU baseline)  ",
+	"Avoid burstable performance instance types. (T3 and T2 are designed for CPU baseline)  ",
 
-"Steady-state group to help ensure that a single instance is always running.  ",
+	"Steady-state group to help ensure that a single instance is always running.  ",
 
-"Thrashing is the condition in which there is excessive use of a computer’s virtual memory, and the computer is no longer able to service the resource needs of applications that run on it.  ",
+	"Thrashing is the condition in which there is excessive use of a computer’s virtual memory, and the computer is no longer able to service the resource needs of applications that run on it.  ",
 
-"Thrashing could occur if instances are removed and added—or added and removed—in succession too quickly.  ",
+	"Thrashing could occur if instances are removed and added—or added and removed—in succession too quickly.  ",
 
-"Avoid thrashing: Setting alarms (Configure launches for state changes, CPU utilization is at 90 percent for 10 minutes), Cooldown periods (simple scaling, suspend scaling for 5 minutes.), instance warmup period (step scaling, newly launched instance to warm up in 5 mins)  ",
+	"Avoid thrashing: Setting alarms (Configure launches for state changes, CPU utilization is at 90 percent for 10 minutes), Cooldown periods (simple scaling, suspend scaling for 5 minutes.), instance warmup period (step scaling, newly launched instance to warm up in 5 mins)  ",
 
-"EC2 Autoscaling supports cooldown periods when using simple scaling policies but not when using target tracking policies, step scaling policies, or scheduled scaling.  ",
+	"EC2 Autoscaling supports cooldown periods when using simple scaling policies but not when using target tracking policies, step scaling policies, or scheduled scaling.  ",
 
-"When you manually scale your Amazon EC2 Auto Scaling group, the default is not to wait for the cooldown period. However, you can override the default and honor the cooldown period. Note that if an instance becomes unhealthy, Amazon EC2 Auto Scaling does not wait for the cooldown period to complete before replacing the unhealthy instance. Amazon EC2 Auto Scaling supports both default cooldown periods and scaling-specific cooldown periods.  ",
+	"When you manually scale your Amazon EC2 Auto Scaling group, the default is not to wait for the cooldown period. However, you can override the default and honor the cooldown period. Note that if an instance becomes unhealthy, Amazon EC2 Auto Scaling does not wait for the cooldown period to complete before replacing the unhealthy instance. Amazon EC2 Auto Scaling supports both default cooldown periods and scaling-specific cooldown periods.  ",
 
-"Benefits: Fault tolerance, High Availability, Performance, Cost optimization" ] 
+	"Benefits: Fault tolerance, High Availability, Performance, Cost optimization" ] 
 elb = [
 	"Elastic Load Balancers (traffic directors)" ,
 
@@ -383,17 +422,129 @@ lambda = [
 rds = [
 	"Backup Options => Snapshots => Manual, Automatic => First snapshot (full data); Subsequent snapshots (remaining/increment data) ",
 
-"Instance Creation Types: Standard Create => Easy create ",
+	"Instance Creation Types: Standard Create => Easy create ",
 
-"High availability with Multi-AZ deployment: Replication across zones in same vpc ",
+	"High availability with Multi-AZ deployment: Replication across zones in same vpc ",
 
-"Failover in RDB: If primary db fails, Amazon RDS uses the standby db instance as new primary instance." ,
+	"Failover in RDB: If primary db fails, Amazon RDS uses the standby db instance as new primary instance." ,
 
-"RDS supports read replicas. (db replicated to accommodate get requests, can be used as primary db manually)" ,
+	"RDS supports read replicas. (db replicated to accommodate get requests, can be used as primary db manually)" ,
 
-"RDS Scaling => Vertical Scaling (on relational) on => instance class(compute and memory) and Storage Capacity"  ,
+	"RDS Scaling => Vertical Scaling (on relational) on => instance class(compute and memory) and Storage Capacity"  ,
 
-"DB engines => Aurora (Native to AWS), MySQL, MariaDB, PostgreSQL, MsSQL, Oracle "]
+	"DB engines => Aurora (Native to AWS), MySQL, MariaDB, PostgreSQL, MsSQL, Oracle "]
+memoryDB = [
+	"Amazon MemoryDB for Redis: durable in-memory database service that delivers ultra-fast performance.",
+
+	"Can be used as database or caching service"]
+elasticCache = [
+	"Serverless caching compatible with memcache and redis."]
+cloudFrontLambda = [
+	"AWS CloudFront Lambda@Edge is a feature of Amazon CloudFront that lets you run code closer to users of your application, which improves performance and reduces latency"] //<<<<<<<<<
+
+ecr = [
+	"A fully managed Docker container registry that developers can use to store, manage, and deploy Docker container images.",
+
+	"Amazon ECR is integrated with Amazon ECS.",
+
+	"You can access Amazon ECR from any Docker environment whether it is in the cloud, on premises, or on your local machine.",
+
+	"Amazon ECR stores your container images in Amazon Simple Storage Service (Amazon S3) so it benefits from the high availability and durability of Amazon S3.",
+
+	"You can transfer your container images to and from Amazon ECS via HTTPS.",
+
+	"You can define and organize (based on your team’s existing workflows) repositories in your Amazon ECR registry by using namespaces.",
+
+	"Your images are also automatically encrypted at rest by using Amazon S3 server-side encryption.",
+
+	"Amazon ECR also supports third-party integrations."]
+eks = [
+	"A managed service that you can use to run Kubernetes on AWS without needing to install and operate your own Kubernetes clusters",
+
+	"With Amazon EKS, AWS manages upgrades and high availability services for you. Amazon EKS runs three Kubernetes managers across three Availability Zones to provide high availability.",
+
+	"Amazon EKS automatically detects and replaces unhealthy managers and provides automated version upgrades and patching for the managers.",
+
+	"Amazon EKS is also integrated with many AWS services and features to provide scalability and security for your applications, including the following: Elastic Load Balancing (ELB) for load distribution, IAM for authentication, Amazon Virtual Private Cloud (Amazon VPC) for isolation, AWS PrivateLink for private network access, AWS CloudTrail for logging",
+
+	"You can use Amazon EKS to install, manage, and update common operational software for your cluster directly through the Amazon EKS console, AWS Command Line Interface (AWS CLI), and API. AWS validates all operational software, which you can deploy and update during cluster setup or at any time",
+
+	"Operating Kubernetes for production applications presents several challenges: -You must manage the scaling and availability of your Kubernetes control plane by ensuring that you have chosen appropriate instance types, run them across multiple Availability Zones, monitored their health, and replaced unhealthy nodes. -You need to patch and upgrade your control plane and nodes to ensure that you run the latest version of Kubernetes. This patching and upgrading require expertise and a lot of manual work."]
+fargate = [
+	"AWS Fargate is a compute engine for Amazon ECS and Amazon EKS that gives you the ability to run containers without having to manage servers or clusters.",
+
+	"With Amazon EKS, you can forward container logs from pods running on Fargate to AWS services for log storage and analytics, including Amazon CloudWatch, Amazon OpenSearch Service (successor to Amazon Elasticsearch Service), Amazon Kinesis Data Firehose, and Amazon Kinesis Data Streams."]
+
+appSync = [
+	"AWS AppSync creates serverless GraphQL and Pub/Sub APIs that simplify application development through a single endpoint to securely query, update, or publish data."]//<<<<<
+amplify = [
+	"AWS Amplify is a complete solution for frontend web and mobile developers to build, ship, and host full-stack applications on AWS with the flexibility to leverage the breadth of AWS services as use cases evolve. No cloud expertise is needed."]//<<<<<
+appStream = [
+	"Amazon AppStream 2.0 is an AWS End User Computing (EUC) service that can be configured for software as a service (SaaS) application streaming or delivery of virtual desktops with selective persistence.", 
+	"When AppStream 2.0 is used for virtual desktops, saved files and application settings remain persistent between user sessions, and a fresh virtual desktop is assigned to the user every time they log on. "]
+workspacesWeb = [
+	"Amazon WorkSpaces Web is a low cost, fully managed, Linux-based service that is designed to facilitate secure browser access to internal websites and SaaS applications from existing web browsers without the administrative burden of appliances, managed infrastructure, specialized client software, or virtual private network (VPN) connections. "]//<<<<<<<<<<
+
+athena = [
+	"Amazon Athena is an interactive query service that makes it easy to analyze data in Amazon Simple Storage Service (Amazon S3) by using standard structured query language (SQL).",
+
+	"Handles large-scale datasets with ease •Serverless—Avoids the need to extract, transform, and load (ETL) •Pay only for the queries that you run •Athena automatically runs queries in parallel so most results come back in seconds.",
+
+	"Flow: 1. Create an Amazon Simple Storage Service (Amazon S3) bucket and load data into it–Alternatively, have an existing bucket with data already in it 2. Define the schema (table definition) that describes the data structure 3. Start querying data by using structured query language (SQL)",
+
+	"Use Cases: Athena makes it easier to query logs from services, such as: •AWS CloudTrail •Application Load Balancer logs •Amazon Virtual Private Cloud (Amazon VPC) Flow Logs"]
+dataExchange = [
+	"AWS Data Exchange is a platform where customers can find, subscribe to, and use third-party data files, tables, and APIs in the cloud.",
+
+	"A data grant is the unit of exchange in AWS Data Exchange that is created by a data sender in order to grant a data receiver access to a data set. When a data sender creates a data grant, a grant request is sent to the data receiver's AWS account. The recipient accepts the data grant to gain access to the underlying data.",
+
+	"As a recipient, you can view all of your current, pending, and expired data grants from the AWS Data Exchange console. You can also discover and subscribe to new third-party data sets available through AWS Data Exchange from the AWS Marketplace catalog."]
+amazonemr = [
+	"Amazon EMR is a cloud big data solution that lets you run and scale Apache Spark, Hive, and other open-source frameworks for data processing, analytics, and machine learning.",
+
+	"Amazon EMR (previously called Amazon Elastic MapReduce) is a managed cluster platform that simplifies running big data frameworks, such as Apache Hadoop and Apache Spark, on AWS to process and analyze vast amounts of data."]
+glue =[
+	"AWS Glue is a service that lets you discover, prepare, move, and integrate data from multiple sources for analytics, machine learning, and application development.",
+
+	"ETL"]
+msk = [
+	"Amazon MSK is a fully managed, secure, and highly available Apache Kafka service that makes it easy to ingest and process streaming data at a low cost."]
+openSearch = [
+	"Deploy, operate, and scale OpenSearch Service clusters in the AWS Cloud"]
+xray = [
+	"Collects data about requests that the user's application serves and provides tools to view, filter, and gain insights into that data to identify issues and opportunities for optimization"]
+deviceFarm = [
+	"AWS Device Farm is an application testing service for users to improve the quality of their web applications and mobile apps by testing them across an extensive range of desktop browsers and real mobile devices."]//<<<<<<<<<<<<<<
+iotGreenGrass = [
+	"AWS IoT Greengrass is an open source edge runtime and cloud service for building, deploying, and managing device software."]//<<<<<<<<<<<<<<
+kendra = [
+	"Amazon Kendra is an intelligent enterprise search service that helps the user search across different content repositories with built-in connectors."]//<<<<<<<<<<<<<<
+comprehend = [
+	"Amazon Comprehend is a natural-language processing (NLP) service that uses ML to uncover valuable insights and connections in text."]//<<<<<<<<<<<<<<
+lex=[
+	"Amazon Lex is a fully managed artificial intelligence (AI) service with advanced natural language models to design, build, test, and deploy conversational interfaces in applications."]//<<<<<<<<<<<<<<
+polly = [
+	"Amazon Polly uses deep learning technologies to synthesize natural-sounding human speech so that the user can convert articles to speech. "]//<<<<<<<<<<<<<<
+rekognition = [
+	"Amazon Rekognition offers pre-trained and customizable computer vision (CV) capabilities to extract information and insights from images and videos."]//<<<<<<<<<<<<<<
+sageMaker = [
+	"Amazon SageMaker is a fully managed ML service. With SageMaker, data scientists and developers can quickly build and train ML models and then deploy them into a production-ready hosted environment."]//<<<<<<<<<<<<<<
+textract = [
+	"Amazon Textract is an ML service that automatically extracts text, handwriting, and data from scanned documents. It goes beyond optical character recognition (OCR) to identify, understand, and extract data from forms and tables."]//<<<<<<<<<<<<<<
+transcribe = [
+	"Amazon Transcribe provides transcription services for audio files and audio streams. It uses advanced ML technologies to recognize spoken words and transcribe them into text."]//<<<<<<<<<<<<<<
+translate =[
+	"Amazon Translate is a neural machine translation service that delivers fast, high-quality, affordable, and customizable language translation."]//<<<<<<<<<<<<<<
+sns = [
+	""] //<<<<<<<<
+ses= [
+	""] //<<<<<<<
+pinpoint = [
+	"Amazon Pinpoint lets you send personalized and segmented SMS messages to customers across over 240 countries and regions."] //<<<<<<<<<<<<<
+personalize = [
+	"Amazon Personalize personalizes your customers' experiences of applications with ML"]//<<<<<<<<<<<<<
+dataPipeline = [
+	"AWS Data Pipeline is a web service that helps move data between different AWS compute and storage services and on-premise data sources1234. It allows for the reliable processing and transformation of data into a legible format for further processing and analysis"]//<<<<<<<<<<<<
 
 aurora = [
 	"Created with clusters",
@@ -435,6 +586,14 @@ dms = [
 	"Homogeneous database migrations, the source and target database engines are the same or are compatible.",
 
 	"Heterogeneous database migrations, the source and target database engines are not the same or are incompatible. Uses AWS SCT to converts your existing database schema and code to target compatible schema"]
+qldb = [
+	"Fully managed ledger database that provides a transparent, immutable, and cryptographically verifiable transaction log.",
+
+	"Track and maintain a sequenced history of every application data change using an immutable and transparent journal",
+
+	"Trust the integrity of your data. Built-in cryptographic verification enables third-party validation of data changes."]
+neptune = [
+	"Fast, reliable, fully managed graph database services used to build and run applications that work with highly connected datasets."]
 
 cli=[
 	"Use the aws configure command to specify default settings in AWS CLI. ",
@@ -456,7 +615,56 @@ cli=[
 	"--filter option is used to restrict the result set filtered on the server side" ,
 
 	"--dry-run option: This option checks for required permissions without making a request "]
+cloudTrail = [
+	"It continuously monitors account activity and logs hierarchically in S3 bucket you specify",  
+
+	"CloudTrail is an auditing, compliance monitoring, and governance tool classified as a Management and Governance tool", 
+
+	"Will not track events within an Amazon Elastic Compute Cloud (Amazon EC2) instance–Example: Manual shutdown of an instance",
+
+	"Records application programming interface (API) calls for most AWS services–AWS Management Console and AWS Command Line Interface (AWS CLI) activity are also recorded." ,
+
+	"Best Practices: ", 
+
+	"Turn on CloudTrail log file integrity validation. "+ 
+	"Aggregate log files to a single S3 bucket. "+
+	"Ensure that CloudTrail is enabled across AWS globally. "+
+	"Restrict access to CloudTrail S3 buckets. Integrate with Amazon CloudWatch.",
+	"Set Up CloudTrail: 1. Configure a new or existing Amazon Simple Storage Service (Amazon S3) bucket for uploading log files. 2. Define a trail to log desired events (all management events are logged by default). 3. Create an Amazon Simple Notification Service (Amazon SNS) topic to receive notifications. 4. Configure Amazon CloudWatch Logs to receive logs from CloudTrail (optional). 5. Turn on log file encryption and integrity validation for log files (optional). 6. Add tags to your trail (optional)."]
+cloudWatch = [
+	"Monitors the state and utilization of most resources that you can manage under AWS.", 
+	"Key concepts: Standard metrics, Custom metrics, Alarms, Notifications",
+
+	"CloudWatch agent collects system-level metrics on EC2 instances, On-premises servers",
+
+	"Metrics exist only in the Region where they are created.",
+
+	"A metric represents a time-ordered set of data points(namespace: monitored service, dimension: metric unique_id, period: length of time ) that are published to CloudWatch.",
+
+	"Standard metrics:•Grouped by service name•Display graphically so that selected metrics can be compared•Only appear if you have used the service in the past 15 months•Reachable programmatically through the AWS Command Line Interface (AWS CLI) or application programming interface (API)",
+
+	"Custom metrics:•Grouped by user-defined namespaces•Publish to CloudWatch by using the AWS CLI, an API, or a CloudWatch agent",
+
+	"Cloudwatch metrics offers three retention schedules:•1-minute data points are available for 15 days.•5-minute data points are available for 63 days.•1-hour data points are available for 455 days.",
+
+	"Cloudwatch Alarm States: Threshold not exceeded: OK, Threshold exceeded: ALARM, Insufficient Data: Alarm has just started, a metric is not available, or insufficient data",
+
+	"EC2 instances only report data every 5 minutes (AWS Free Tier). Enable detailed monitoring on an instance to increase reporting frequency to once every minute. (Extra charges apply)",
+
+	"Use CloudWatch to monitor for suspicious activity, such as: Unusual, prolonged spikes in service usage, such as CPU, disk activity, or Amazon Relational Database (Amazon RDS) usage. Set alerts on billing metrics (you must enable this feature in account settings)",
+
+	"Use Amazon CloudWatch automated dashboards to surface data about your running AWS services through existing monitoring tools"]
 stepFunction = [
+	"Step Functions provides serverless orchestration for modern applications. •Orchestration centrally manages a workflow by breaking it into multiple steps, adding flow logic, and tracking the inputs and outputs between the steps.",
+
+	"Step Functions gives you the ability to reuse components and use different services in your application. Step Functions also does the following: •Coordinates existing AWS Lambda functions and microservices into applications •Keeps application logic separated from implementation",
+
+	"The workflows that you build with Step Functions are called state machines, and each step of your workflow is called a state. Tasks perform work, either by coordinating another AWS service or an application that you can host anywhere. You can reuse components, edit the sequence of steps, or swap out the code called by task states as your needs change.",
+
+	"Benefits: Productivity. Agility. Resilience.",
+
+	"Features include the following: •Automatic scaling •Fault Tolerance with High availability(Multi AZs) •Pay per use(Billing is metered by state transition) •Security and Compliance(IAM)"]
+apiGateway = [
 	"Amazon API Gateway handles all the tasks that are involved in accepting and processing concurrent API calls at scale. These tasks include traffic management, authorization and access control, monitoring, and API version management. You pay for only the API calls that you receive and the amount of data that is transferred out.",
 
 	"API Gateway provides you with a dashboard to visually monitor calls to your services so that you can see performance metrics.",
@@ -464,6 +672,13 @@ stepFunction = [
 	"API Gateway works with AWS Lambdaso to create serverless APIs: •First, you create REST APIs with API Gateway. •Then, your mobile and web applications can use these APIs to call publicly available AWS services through the code that you run in Lambda. With API Gateway, you can create RESTful resource-based APIs. Then, you can use the data transformation capabilities to generate the requests in the language that your target services expect",
 
 	"Efficient API development •Performance at any scale •Cost savings at scale •Monitoring •Flexible security controls •RESTful API options"]
+shell = [
+	"Browser-based shell to securely manage, explore, and interact with AWS Services."]
+appconfig = [
+	"AWS Systems Manager capability to create, manage, and quickly deploy application configurations (collection of settings that influence the behavior of applications)."]
+
+activate = [
+	"Provide free resources to startups."]
 
 route53 = [
 	"Route 53 is a scalable Domain Name System (DNS) web service.",
@@ -473,6 +688,8 @@ route53 = [
 "Route 53 + ELB: By default, AWS assigns a hostname to your load balancer that resolves to a set of IP addresses. Assign your own hostname by using an alias resource record set. Create a Canonical Name Record (CNAME) that points to your load balancer.",
 
 "Routing policies: 1. Simple routing policy (to single resource) 2.Weighted routing policy (to multiple resources) 3.Latency routing policy (to region with low latency) 4. Failover routing policy (configure active/passive setup) 5.Geolocation routing policy (based on DNS query location) 6.Geoproximity routing policy (resource location: traffic flow to an AWS Region, or latitude and longitude) 7.Multivalue answer routing policy (respond to DNS queries => up to 8 healthy records) 8.IP-based routing policy (based on IP address and user location)"]
+vpclattice = [
+	"Amazon VPC Lattice is an application networking service that consistently connects, monitors, and secures communications between your services, helping to improve productivity so that your developers can focus on building features that matter to your business. You can define policies for network traffic management, access, and monitoring to connect compute services in a simplified and consistent way across instances, containers, and serverless applications."]
 cloudFront = [
 	"CloudFront is a web service that speeds up the distribution of static and dynamic web content to users through a worldwide network of data centers called edge locations (Point of presence and regional caches) connected to AWS Regions through the AWS network backbone",
 
@@ -481,17 +698,6 @@ cloudFront = [
 "CloudFront WorkFlow: 1.A user accesses your website or application and sends a request for an object. 2. DNS routes the request to the CloudFront POP (edge location) that can best serve the request—typically the nearest CloudFront POP in terms of latency and routes the request to that edge location. 3.CloudFront checks its cache for the requested object. If the object is in the cache, CloudFront returns it to the user. else, CloudFront does the following: A.CloudFront compares the request with the specifications in your distribution and forwards the request to your origin server for the corresponding object (for example, to your S3 bucket or your HTTP server). B. The origin server sends the object back to the edge location. C. As soon as the first byte arrives from the origin, CloudFront begins to forward the object to the user. CloudFront also adds the object to the cache for the next time someone requests it.",
 
 "CloudFront costs are calculated based on geographic region, number and type of requests, and the amount of data that is transferred out."]
-cloudTrail = [
-	"It continuously monitors account activity and logs hierarchically in S3 bucket you specify",  
-
-	"CloudTrail is an auditing, compliance monitoring, and governance tool classified as a Management and Governance tool", 
-
-	"Best Practices:", 
-
-	"Turn on CloudTrail log file integrity validation.", 
-	"Aggregate log files to a single S3 bucket.",
-	"Ensure that CloudTrail is enabled across AWS globally.",
-	"Restrict access to CloudTrail S3 buckets. Integrate with Amazon CloudWatch."]
 config = [
 	"AWS Config is a service used for assessing, auditing, and evaluating the configuration of your AWS resources for security and compliance." ,
 
@@ -503,7 +709,13 @@ config = [
 wellArchitectedFrameworkTool = [
 	"evaluating workloads, identifying high-risk issues, and recording improvements"]
 trustedAdvisor = [
-	"Recommends best practices in cost optimization, performance, security, fault tolerance, service limits"]
+	"Recommends best practices in cost optimization, performance, security, fault tolerance, service limits",
+
+	"Additional checks and recommendations are available with Business Support or Enterprise Support plans",
+
+	"AWS Trusted Advisor analyzes your AWS environment and provides recommendations for best practices.",
+
+	"Recommendations include links to take direct action."]
 prometheus = [
 	"Provides highly available, secure, and managed monitoring for your containers. "]
 systemManager = [
@@ -548,6 +760,55 @@ opswork = [
 	"Automate AWS OpsWorks for Puppet Enterprise = ( workflow automation for orchestration, automated provisioning, and visualization for traceability)." , 
 
 	"AWS OpsWorks Stacks = ( configuration management service that helps you configure and operate applications of all kinds and sizes by using Chef.) "]
+auditManager = [
+	"AWS Audit Manager helps users continually audit their AWS usage to simplify how they manage risk and compliance with regulations and industry standards. Audit Manager automates evidence collection so users can assess whether their policies, procedures, and activities—also known as controls—are operating effectively. When it's time for an audit, Audit Manager helps users manage stakeholder reviews of their controls. This means that they can build audit-ready reports with much less manual effort."]
+controlTower = [
+"With AWS Control Tower, users can enforce and manage governance rules for security, operations, and compliance at scale across all their organizations and accounts in the AWS Cloud."]//<<<<<<<<<<<
+resourceGroups = [
+	"AWS Resource Groups manages and automates tasks on large numbers of resources at one time. A user can use resource groups to organize their AWS resources, and tags are key and value pairs that act as metadata for organizing those resources. With most AWS resources, users have the option of adding tags when creating the resource. "]//<<<<<<<<<<
+healthDashboard = [
+	"The AWS Health Dashboard is the single place to learn about the availability and operations of AWS services. The user can view the overall status of AWS services, and they can sign in to view personalized communications about their particular AWSaccount or organization."]//<<<<<<<<
+computeOptimizer = [
+	"AWS Compute Optimizer recommends optimal AWS compute resources(EC2, EBS, Lambda, AWS Fargate with ECS) for workloads. It can help reduce costs and improve performance by using ML to analyze historical utilization metrics."]//<<<<<<<<
+disasterRecovery = [
+	"By using AWS Elastic Disaster Recovery, a user can increase IT resilience to replicate on-premises or cloud-based applications running on supported operating systems. Users can use the AWS Management Console to configure replication and launch settings, monitor data replication, and launch instances for drills or recovery."]//<<<<<<<<
+iq = [
+	"AWS IQ: Find and engage experts on AWS."]//<<<<<<<<
+launchWizard = [
+	"AWS Launch Wizard offers a guided way of sizing, configuring, and deploying AWS resources for third-party applications, such as Microsoft SQL Server Always On and HANA-based SAP systems, without the need to manually identify and provision individual AWS resources. To start, the user inputs their application requirements, including performance, number of nodes, and connectivity, into the service console.",
+	 "Launch Wizard then identifies the right AWS resources, such as EC2 instances and Amazon Elastic Block Store (Amazon EBS)volumes, to deploy and run their application.", 
+	"Launch Wizard provides an estimated cost of deployment and gives users the ability to modify their resources to instantly view an updated cost assessment. Once the user approves the AWS resources, Launch Wizard automatically provisions and configures the selected resources to create a fully functioning, production-ready application."]//<<<<<<<<
+migrationHub = [
+	"AWS Migration Hub provides a single location to track migration tasks across multiple AWS tools and partner solutions.", 
+	"With Migration Hub, users can choose the AWS and partner migration tools that best fit their needs while providing visibility into the status of their migration projects.", 
+	"Migration Hub also provides key metrics and progress information for individual applications, regardless of which tools are used to migrate them. "]//<<<<<<<<
+migrationService = [
+"AWS Application Migration Serviceis a highly automated lift-and-shift (rehost) solution that simplifies, expedites, and reduces the cost of migrating applications to AWS. Companies can use this service to lift and shift a large number of physical, virtual, or cloud servers without compatibility issues, performance disruption, or long cutover windows. "]
+applicationDiscovery = [
+	"AWS Application Discovery Service helps systems integrators quickly and reliably plan application migration projects by automatically identifying applications running in on-premises data centers, their associated dependencies, and their performance profile. "]
+
+localZones = [
+	"Deploy AWS services close to large population and industry centers."]
+outpost = [
+	"Delivering AWS infrastructure and services to virtually any on-premises or edge location for a truly consistent hybrid experience."] 
+wavelength = [
+	"Deploy AWS compute and storage services to the edge of the communications service provider's 5g networks for ultra-low latency. (piggybacking)"]
+iotCore = [
+	"AWS IoT Core connects billions of Internet of Things (IoT) devices and routes trillions of messages to AWS services without managing infrastructure."]//<<<<<<<<<<<<<
+eventbridge = [
+	"Serverless Service that uses events to connect application components to build scalable, event-driven applications."]
+privateLink = [
+	"AWS PrivateLink is a networking construct that allows an application/service residing in one VPC (the “Service Provider VPC”) to be accessed by clients/consumers in (or through) other VPCs within the AWS Region (“Consumer VPCs”)."]
+connect = [
+	"Omnichannel cloud contact center. (VOIP)"]
+resourceManager = [
+	"AWS Resource Access Manager (AWS RAM) helps users securely share their resources across AWS accounts, within their organization or organizational units (OUs) in AWS Organizations, and with IAM roles and IAM users for supported resource types.", 
+	"A user can use AWS RAM to share resources with other AWS accounts. This eliminates the need to provision and manage resources in every account.",
+
+	"When a user shares a resource with another account, that account is granted access to the resource, and any policies and permissions in that account apply to the shared resource."] //<<<<<<
+serviceCatalog = [
+	"With AWS Service Catalog, IT administrators can create, manage, and distribute portfolios of approved products to end users, who can then access the products they need in a personalized portal."]//<<<<<<
+
 
 s3 = [
 "Amazon S3 storage classes, stores data in at least three Availability Zones aside one zone specific storage classes." ,
@@ -650,50 +911,78 @@ dataSync = [
 	"DataSync is an online data transfer service that automates and accelerates the moving of data between on-premises storage systems and AWS storage services. It also moves data between AWS storage services.",
 
 	"Features. Synchronizes between on-premises and AWS. Is efficient and fast. Is a managed service. Connects over the internet or AWS Direct Connect. Includes AWS DataSync Agent (NFS protocol)"]
+codeArtefact = [
+	"Fully Managed Artifact repository service that organizations use to securely store publish and share packages used in software developments."]
+fsx = [
+	"Amazon FSx is built on the latest AWS compute, networking, and disk technologies to provide high performance and lower total cost of ownership (TCO). As a fully managed service, Amazon FSx handles hardware provisioning, patching, and backups—freeing users to focus on applications, end users, and their business."]
 
 iam = [
-"Centrally manage authentication and access to Amazon Web Services (AWS) resources." ,
+	"Centrally manage authentication and access to Amazon Web Services (AWS) resources." ,
 
-"Create Users, groups, and roles; Apply Policies to them to control their access to AWS resources "  ,
+	"Create Users, groups, and roles; Apply Policies to them to control their access to AWS resources "  ,
 
-"Security Credentials: " ,
+	"Security Credentials: " ,
 
-"Email and password(root), Username and Password(IAM user), access/secret keys (cli, sdk, rest), Multifactor Authentication, Key pairs(instances) " ,
+	"Email and password(root), Username and Password(IAM user), access/secret keys (cli, sdk, rest), Multifactor Authentication, Key pairs(instances) " ,
 
-"Best Practices: " ,
+	"Best Practices: " ,
 
-"Create a separate IAM user account with administrative permissions instead of using the AWS account root user. " ,
+	"Create a separate IAM user account with administrative permissions instead of using the AWS account root user. " ,
 
-"Instead of assigning roles to multiple users, put user in a group and assign only once " ,
+	"Instead of assigning roles to multiple users, put user in a group and assign only once " ,
 
-"IAM users: Are an entity/application. Have no default security credentials " ,
+	"IAM users: Are an entity/application. Have no default security credentials " ,
 
-"IAM Groups: Groups are collections of IAM users. No default groups exist. Groups cannot be nested. Users can belong to multiple groups. " ,
+	"IAM Groups: Groups are collections of IAM users. No default groups exist. Groups cannot be nested. Users can belong to multiple groups. " ,
 
-"IAM Roles: Are used to delegate access to AWS resources. Provide temporary access " ,
+	"IAM Roles: Are used to delegate access to AWS resources. Provide temporary access " ,
 
-"IAM policies: formal statements of one or more permissions. Identity-based policies: attach to principal/identity(IAM user, role, or group); Resource-based policies: attach to AWS resource(s3) " ,
+	"IAM policies: formal statements of one or more permissions. Identity-based policies: attach to principal/identity(IAM user, role, or group); Resource-based policies: attach to AWS resource(s3) " ,
 
-"IAM permissions: IAM first checks for an explicit deny policy. If one does not exist, it then checks for an explicit allow policy. If neither exists, it reverts to the default: implicit deny (least privilege). " ,
+	"IAM permissions: IAM first checks for an explicit deny policy. If one does not exist, it then checks for an explicit allow policy. If neither exists, it reverts to the default: implicit deny (least privilege). " ,
 
-"For programmatic access (cli and sdk), create an access key ID and a secret access key.  " ,
+	"For programmatic access (cli and sdk), create an access key ID and a secret access key.  " ,
 
-"The trust policy specifies who can assume a principal role. The access (or permissions) policy defines which actions and resources the principal is allowed access to " ,
+	"The trust policy specifies who can assume a principal role. The access (or permissions) policy defines which actions and resources the principal is allowed access to " ,
 
-"Use instance profile to attach an IAM role to an instance " ,
+	"Use instance profile to attach an IAM role to an instance " ,
 
-"First define an IAM role with an IAM policy that grants the required level of access to the S3 bucket.  " ,
+	"First define an IAM role with an IAM policy that grants the required level of access to the S3 bucket.  " ,
 
-"Then, add the role to an instance profile, and attach the instance profile to the EC2 instance. " ,
+	"Then, add the role to an instance profile, and attach the instance profile to the EC2 instance. " ,
 
-"Benefits of an instance profile: " ,
+	"Benefits of an instance profile: " ,
 
-"You don’t have to store credentials (access key and secret key) locally on the instance, which is a security risk. " ,
+	"You don’t have to store credentials (access key and secret key) locally on the instance, which is a security risk. " ,
 
-"Credentials are temporary and rotated automatically. " ,
+	"Credentials are temporary and rotated automatically. " ,
 
-"You can use a role for multiple instances (for example, instances in an Auto  Scaling group) "]
+	"You can use a role for multiple instances (for example, instances in an Auto  Scaling group) "]
 organisations = [
+	"AWS Organizations is an account management service that enables you to consolidate multiple AWS accounts into anorganizationthat you create and centrally manage.",
+
+	"AWS Organizations include consolidated billing and account management capabilities that help you to better meet the budgetary, security, and compliance needs of your business.",
+
+	"When you attach a policy to one of the nodes in the hierarchy, it flows down and affects all the branches and leaves.",
+
+	"An Organizational Unit(OU) can have only one parent and, currently, each account can be a member of exactly one OU.",
+
+	"An account is a standard AWS account that contains your AWS resources. You can attach a policy to an account to apply controls to only that one account.",
+
+	"Benefits: •Centrally managed access policies across multiple AWS accounts.•Controlled access to AWS services.•Automated AWS account creation and management.•Consolidated billing across multiple AWS accounts.",
+
+	"Security: IAM vs Serice Control Policies in AWS Organisations",
+
+	"Control access with AWS Identity and Access Management (IAM). •IAM policies enable you to allow or deny access to AWS services for users, groups, and roles.•Service control policies (SCPs) enable you to allow or deny access to AWS services for individuals or group accounts in an organizational unit (OU) including root users.",
+
+	"STEPS: Step 1: Create your organization with your current AWS account as the management account. This process assumes that you have administrator permissions in your current account. After you create an organization, you can add accounts to it by creating new accounts or inviting existing accounts to join using the management account.•Step 2: Create organizational units (OUs) in your new organization and move the member accounts in to those OUs.•Step 3: Create service control policies (SCPs), which enable you to apply restrictions to what actions can be delegated to users and roles in the member accounts. An SCP is a type of organization control policy. •Step 4: To test your organization’s policies, sign in as a user for each role in your OUs and see how the service control policies impact account access. Alternatively, you can use the IAM policy simulator to test and troubleshoot IAM and resource-based policies that are attached to IAM users, groups, or roles in your AWS account.",
+
+	"Rules for names: Names must be composed of Unicode characters, Names can be up to 250 characters in length.",
+
+	"Maximum and Minimum Values: Number of AWS accounts: 4. Number of roots: 1. Number of policies: 1,000, Maximum size of a service control policy document: 5,120 bytes. OU maximum nesting in a root: 5, levels of OUs deep under a root Invitations sent per day: 20, Number of member accounts that you can create concurrently: Up to five can be in progress at one time, Number of entities that you can attach a policy to: Unlimited",
+
+	"Accessing AWS Org: AWS Management Console, Accessing AWS Organizations, AWS Command Line Interface (AWS CLI), Software development kits (SDKs), HTTPS query",
+	
 	"AWS Organizations service control policies (SCPs) apply permissions boundaries to AWS Organizations, organizational units (OUs), or accounts. SCPs use the JSON format. "]
 guardDuty = [
 	"Intrusion Detection System",
@@ -710,15 +999,16 @@ cognito = [
 cloudhsm = [
 	"Cloud-based hardware security module (HSM) to generate and use your own encryption keys on the AWS Cloud"]
 kms = [
-	"Creates and manages cryptographic keys and controls their use within AWS services" ]
+	"Creates and manages cryptographic keys and controls their use within AWS services",
+	"AWS Key Management Service (AWS KMS)is an encryption and key management service scaled for the cloud. Other AWS KMS keys and functionality are used by other AWS services, and a user can use them to protect data in their own applications that use AWS. "]
 acm = [
 	"easily provision, manage, and deploy your public and private SSL/TLS certificates." ]
 macie = [
 	"fully managed data security and data privacy service that uses machine learning and pattern matching to discover and protect your sensitive data in AWS."]
-singleSign = [
-	"centrally manage Single Sign On (SSO) access to all Amazon Web Services"]
 workspaces = [
-"Amazon WorkSpaces to provision virtual, cloud-based Microsoft Windows or Amazon Linux desktops, known as WorkSpaces, for their users. secure, simple to manage, scale consistently", 
+"Amazon WorkSpaces to provision virtual, cloud-based Microsoft Windows or Amazon Linux desktops, known as WorkSpaces, for their users. secure, simple to manage, scale consistently",
+
+"Amazon WorkSpaces is a fully managed desktop virtualization service for Windows, Linux, and Ubuntu that gives the user the ability to access resources from any supported device.",
 
 "Security compliance ensures that security controls meet regulatory and contractual requirement." ,
 
@@ -727,143 +1017,374 @@ workspaces = [
 "Directory to authenticate users.",  
 
 "Customers can deploy and manage applications for their Workspaces by using Amazon Workspaces Application Manager (Amazon WAM)"]
+firewallManager = [
+	"AWS Firewall Manager simplifies a user’s AWS WAF administration and maintenance tasks across multiple accounts and resources.", 
 
+	"With Firewall Manager, users set up their firewall rules only once. The service automatically applies these rules across accounts and resources, even as new resources are added."]
+secretManager = [
+	"AWS Secrets Manager helps a user to securely encrypt, store, and retrieve credentials for databases and other services. Instead of hardcoding credentials in applications, a user can make calls to Secrets Manager to retrieve credentials whenever needed.",
+	"Secrets Manager helps protect access to IT resources and data by giving users the ability to rotate and manage access to their secrets."]
+securityHub = [
+	"AWS Security Hub provides users with a comprehensive view of their security state in AWS and helps them check their environment against security industry standards and best practices.",
+	"Security Hub collects security data from across AWS accounts, services, and supported third-party partner products and helps users analyze their security trends and identify the highest priority security issues."]
+networkFirewall = [
+	"AWS Network Firewall is a stateful, managed, network firewall and intrusion detection and prevention service for a user’s VPC that is created in Amazon Virtual Private Cloud (Amazon VPC).",
+	"With Network Firewall, a user can filter traffic at the perimeter of a VPC. This includes filtering traffic going to and coming from an internet gateway, NAT gateway, or over VPN or AWS Direct Connect."] // <<<<<<<<<<<<<<<
+singleSign= [
+	"centrally manage Single Sign On (SSO) access to all Amazon Web Services",
+	"With AWS IAM Identity Center (successor to AWS Single Sign-On), a user can manage sign-in security for their workforce identities, also known as workforce users. IAM Identity Center provides one place where users can create or connect workforce users and centrally manage their access across all their AWS accounts and applications.", 
+	"Users can use multi-account permissions to assign their workforce users access to AWS accounts. Users can use application assignments to assign their users access to IAM Identity Center enabled applications, cloud applications, and customer Security Assertion Markup Language (SAML 2.0) applications."]
+directoryService = [
+	"AWS Directory Service provides multiple ways to set up and run Microsoft Active Directory with other AWS services, such as Amazon EC2, Amazon RDS for SQL Server, Amazon FSx for Windows File Server, and AWS IAM Identity Center (successor to AWS Single Sign-On). With AWS Directory Service for Microsoft Active Directory, also known as AWS Managed Microsoft AD, user’s directory-aware workloads and AWS resources can use a managed Active Directory in the AWS Cloud."]
 
-aws["Infrastructure and Deployment"] = [
+billing = [
+	"View the overall status of your costs and usage.",
+
+	"Access your monthly bill.",
+	"The AWS Bills page lists the costs that you incurred over the past month for each AWS service.", 
+
+	"It also includes a further breakdown by AWS Region and linked account.",
+
+	"This tool gives you access to the most up-to-date information about your costs and usage, including your monthly bill and the detailed breakdown of the AWS services that you use."]
+costandusage = [
+	"Visualize, understand, and manage your AWS costs and usage over time.",
+
+	"Forecast future costs and usage",
+
+	"AWS Cost Explorer enables you to view your costs and usage, and to analyze them to identify trends.",
+
+	"You can filter and group data along various dimensions, such as service, instance type, and tag",
+
+	"Two types of default reports",
+
+	"Cost and Usage reports: These reports enable you to understand your costs and usage for all services. For example, the Monthly costs by service report shows your costs for the last 3 months, grouped by service.",
+
+	"Reserved Instance (RI) reports: These reports are specific to your Reserved Instances usage. They provide an understanding of your comparative utilization costs for Reserved Instances versus On-Demand Instances."]
+budgets = [
+	"Set custom cost and usage budgets.",
+	"Receive alerts you when your costs or usage exceed these thresholds."]
+costexplorer = [
+	"Use AWS Cost Explorer to find the costs that are associated with entire projects or initiatives."]
+migrationEvaluator = [
+	"Migration Evaluator, formerly known as TSO Logic, is an AWS-provided tool that assists organizations in assessing their current IT environment and estimating the potential cost savings and performance improvements achievable by migrating to Amazon Web Services (AWS)1"] //<<<<<<<<<<<<<<<<
+
+aws["Infrastructure_and_Deployment"] = [
 	
 	["AWS Global Infrastracture", awsGlobalInfra],
 
 	["AWS Cloud Adoption Framework (Cloud Organizational Dpmts)", caf],
 
-	["AWS Well Architecture Framework", waf],
+	["AWS Well Architecture Framework (Frameworks aligning with cloud best practises)", waf],
 
 	["AWS Launch Template", launchTemplate]]
 
 aws["Compute"] = [ 
+	["#####VMs and Apps", null],
 
-	["EC2 (VM’s on the cloud)", ec2] ,
+	["EC2 (VM’s on the cloud)", ec2],
 
-	["Elastic Beanstalk (EC2 set up and scaling virtualized)", elasticBeanstalk]  ,
+	["Elastic Beanstalk (EC2 set up and scaling virtualized)", elasticBeanstalk],
 
-	["EC2 Autoscaling (Scale EC2 Instances on demand)", autoScaling]  ,
+	["EC2 Autoscaling (Scale EC2 Instances on demand)", ec2autoScaling],
 
-	["AWS Lambda (just run your code on AWS)", lambda] ,
+	["AWS Lambda (just run your code on AWS)", lambda],
 
-	//Containers  
+	["AWS Lambda SnapStart (Achieve up to 10x faster Java function startup times)", lambdaSnapStart],
 
-	["ECS (Some docker stuff. Ask the devs)", ecs] ,
+	["AWS Serverless Application Repository(Discover, deploy, and publish serverless applications)", serverlessAppRepo],
 
-	["EKS (Minikube, Kubernetes/k8s. Docker Swarm? I doubt.)", eks] ,
+	["Amazon WorkSpaces (desktop workstations virtualised)", workspaces],
 
-	["ECR (just github for docker on AWS)", ecr] ,
+	["#####Containers", null],
 
-	["AWS Fargate (like beanstalk for containers)", fargate] ,
+	["ECS (Some docker stuff. Ask the devs)", ecs],
 
-	//Database. 
+	["EKS (Run a Kubernetes Cluster on AWS)", eks],
 
-	["RDS (relational database stuff. I think tables and stuff like that)", rds] ,
+	["AWS Fargate (Going Serveless with ECS/EKS)", fargate],
 
-	["Aurora (innovated PostgreSQL, quite cool, somehow redundant, hopefully not expensive)", aurora] ,
+	["AWS LightSail (deploy user-friendly servers)", lightsail],
 
-	["Redshift (Query Stuff in S3)", redshift] ,
+	["AWS App Runner", appRunner],
 
-	["DynamoDB (document-based stuff like cockcroachdb, mongodb and the like ...)", dynamo] ,
+	["AWS Batch (Run batch jobs at scale)", batch],
 
-	["Amazon Database Migration Service", dms] ]
+	["AWS Compute Optimizer (Identify Optimal Compute Resources)", computeOptimizer],
+
+	["AWS SimSpace Weaver (Build dynamic, large-scale spatial simulations on AWS managed infrastructure)", simspace],
+
+	["AWS Wavelength (reach application servers(no network hops) running in wavelength zones without leaving ISP's network)", wavelength],
+
+	["VMware Cloud on AWS (Build a hybrid cloud without custom hardware)", vmware],
+
+	["EC2 Image Builder (Build and maintain secure Linux or Windows Server images)", ec2ImageBuilder],
+
+	["AWS Autoscaling (develop scaling plan for multiple AWS resources (ec2, Dynamo, ecs, Aurora ...) to meet application's demand)", autoScaling],
+
+	["AWS Local Zones (place resources, such as compute and storage, in multiple locations closer to your end users.)", localZones],
+
+	["AWS Outposts (deploy AWS Services on-premise/co-locally, to increase latency and extend VPC)", outpost],]
+
+aws["Databases"] = [
+
+	["Amazon neptune (Graphical Database)", neptune],
+
+	["RDS (Configure SQL db's)", rds] ,
+
+	["Aurora (AWS-Native SQL db setup)", aurora] ,
+
+	["Redshift (Data Warehouse - Accumulate Data from various sources)", redshift] ,
+
+	["DynamoDB (AWS-Native NoSQL db setup)", dynamo] ,
+
+	["Amazon Quantum Ledger Database (Cryptographic Database)", qldb],
+
+	["Amazon MemoryDB for Redis (in-memory database)", memoryDB],
+
+	["Amazon elasticCache (strictly for caching with memcache/redis)", elasticCache],
+
+	["Amazon DocumentDB", documentDB],
+
+	["Amazon Keyspaces (Casandra Compatible DB)", keyspaces],
+
+	["Amazon Timestream", timestream],
+
+	["Amazon Database Migration Service (Migrate Databases)", dms] ]
+
+aws["Analytics"] = [
+
+	["AWS X-Ray", xray],
+
+	["Athena (Query S3)", athena], //dataExchange, amazonemr, glue, msk, openSearch
+
+	["Amazon Elastic Map Reduce(Amazon EMR)", amazonemr],
+
+	["AWS Data Exchange (Find, subscribe to, and use third-party data in the cloud Analytics)", dataExchange],
+ 
+	["AWS Data Pipeline (Orchestration service for periodic, data-driven workflows)", dataPipeline],
+
+	["Amazon Glue", glue],
+
+	["Amazon Managed Service for Kafka", msk],
+
+	["Amazon CloudSearch (Managed search service)", cloudSearch],
+
+	["Amazon DataZone (Unlock data across organizational boundaries with built-in governance)", dataZone],
+
+	["Amazon Kinesis (Analyze real-time video and data streams)", kinesis],
+
+	["Amazon QuickSight (Fast business analytics service)", quickSight],
+
+	["Amazon FinSpace (Store, catalog, prepare, and analyze financial industry data in minutes)", finspace],
+
+	["AWS Clean Rooms (Match, analyze, and collaborate on datasets–without sharing or revealing underlying data)", cleanRooms],
+
+	["Apache Spark support on Amazon Athena (Run interactive analytics on Apache Spark in under a second)", sparkonAthena],
+
+	["AWS Lake Formation (Build a secure data lake in days)", lakeFormation],
+
+	["Amazon OpenSearch", openSearch],]
+
+aws["Machine Learning"] = []
 
 aws["Management_and_Governance"] = [
 
-	["AWS Management Console (Check AWS above)", managementConsole ] ,
+	["AWS Management Console (Web application interface to manage AWS Resources)", managementConsole ] ,
 
-	["AWS CLI (Check AWS above)", cli] ,
+	["AWS CLI (open-source tools to interact with AWS services using commands globally)", cli] ,
 
-	["CloudWatch (watchman for AWS resources)", cloudWatch] ,
+	["AWS CloudShell (browser-based, interactive shell environment for resource management preconfigured with CLI and other tools)", shell],
 
-	["CloudTrail (follow the trail and log every activity of end user)", cloudTrail] ,
+	["Trusted Advisor (inspects our resources and suggest some imporvements with best practises)", trustedAdvisor] ,
 
-	["AWS Autoscaling (scale multiple resources to meet demand)", autoScaling] ,
+	["Config (tracks and evaluates set configurations of AWS resources)", config],
 
-	["Trusted Advisor (advises us with some recommendations to our setups)", trustedAdvisor] ,
+	["Well-Architected Tool (run your architecture against the well architectured framework)" , wellArchitectedFrameworkTool ],
 
-	["Config (track resource inventory and changes against set configurations)", config ] ,
+	["AWS Systems Manager (Operatinoal: central place for managing your infrastructure)", systemManager],
 
-	["Well-Architected Tool (improving workloads)" , wellArchitectedFrameworkTool ],
+	["AWS App Config (manage/deploy app settings fast with Systems Manager)", appconfig],
 
-	["Amazon Managed Service for Prometheus ", prometheus],
-
-	["AWS Systems Manager ", systemManager],
-
-	["AWS CloudFormation", cloudFormation],
+	["AWS CloudFormation (model/provision infrastructure with code)", cloudFormation],
 	
-	["Amazon Opswork", opswork],
+	["Amazon Opswork (application/server management (stacks) and configuaration management(chef/puppet))", opswork],	
 
-	["AWS Step Functions", stepFunction]]
+	["CloudWatch (configure and respond to alarms based on set metrics)", cloudWatch],
+
+	["CloudTrail (follow the trail and log every activity of end user)", cloudTrail],
+
+	["AWS Step Functions (orchestrate serverless microservices)", stepFunction],
+
+	["AWS Service Catalog", serviceCatalog],
+
+	["AWS Resource Manager", resourceManager],
+
+	["AWS Launch Wizard", launchWizard],
+
+	["AWS Migration Hub", migrationHub],
+
+	["AWS IQ", iq],
+
+	["AWS Resource Groups", resourceManager],
+
+	["AWS Control Tower", controlTower]]
 
 aws["Networking_and_Content_Delivery"] = [ 
 
-	["Amazon VPC (Network on the cloud)", vpc] ,
+	["Amazon VPC (Logical Network in the cloud)", vpc] ,
 
-	["CloudFront (CDN stuff)", cloudFront] , 
+	["AWS Global Accelerator (Routing traffic to the best-performing AWS endpoints across multiple regions)", accelerator],
 
-	["Route 53 (DNS Stuff)", route53] ,
+	["CloudFront (CDN: Cache contents at edge locations for latency)", cloudFront] , 
 
-	["AWS Client VPN (like VPN, secure channel to AWS from your network/device)", clientVPN] ,
+	["Route 53 (DNS: Routing End users (internet traffic) to your application)", route53] ,
 
-	["AWS Direct Connect (dedicated private network connection from your data center or office to AWS.)", directConnect] ,
+	["Amazon EventBridge (serverless service that uses events to connect application components together)", eventbridge],
 
-	["Transit Gateway (connect virtual private clouds (VPCs) and on premises networks to one gateway.)", transitGateway] ,]
+	["AWS Site-toSite VPN (remote connection to VPC from one source)", siteToSiteVPN] ,
+
+	["AWS Client VPN (remote connection to VPC from multiple clients)", clientVPN] ,
+
+	["AWS Direct Connect (establish a dedicated network connection between your on-premises environment and AWS)", directConnect] ,
+
+	["Transit Gateway (interconnects multiple networks [VPC's, on-premises, ...])", transitGateway] ,
+
+	["VPC Peering (VPC peering establishes a networking connection between two VPCs)", vpcpeering],
+
+	["API Gateway (route APIs to multiple AWS Resources)", apiGateway],
+
+	["Amazon Network Firewall", networkFirewall],
+
+	["Amazon VPC Lattice", vpclattice],
+
+	["AWS Private Link (Clients in another VPC conecting to a VPC in same region)", privateLink],
+
+	["Amazon Connect (Omnichannel cloud contact center)", connect],
+
+	["AWS App Mesh. (Monitor and control microservices)", appMesh],
+
+	["AWS Cloud Map (Service discovery for cloud resources)", cloudmap],
+
+	["AWS Private 5G (Easily deploy, manage, and scale a private cellular network)", private5G],
+
+	["AWS Verified Access (Provide secure access to corporate applications without a VPN)", verifiedAccess],
+
+	["Elastic Load Balancing (Distribute incoming traffic across multiple targets)", elb],
+
+	["AWS IoT Core", iotCore]]
 
 aws["Security,_Identity,_and_Compliance"] = [
 
-["AWS Identity and Access Management (IAM) - (Manage Users and Resources Permissions)", iam] ,  
+// ["#####Identity", null],
 
-["AWS Organizations - (manage multiple AWS accounts, consolidated billing)", organisations] , 
+["AWS Identity and Access Management (IAM) - (Control Access to AWS Resources)", iam] ,  
 
-["Amazon Cognito (authentication on AWS, like firebase authentication.)", cognito] , 
+["AWS Organizations - (centrally manage multiple AWS accounts)", organisations] , 
 
-["AWS Artifact (security compliance), AWS Key Management Service - (manage keys (PKI’s?))", artifact] ,  
+["AWS Directory Service - (group resources and authenticate users based on Microsoft Directory)", directoryService],
 
-["AWS Shield - (DDoS protection service)", shield] , 
+["Amazon Cognito (customer identity management)", cognito] , 
 
-["Guard Duty - (Sniffs out intrusions/monitors AWS accounts and workloads for malicious activity))", guardDuty] , 
+["IAM Identity Center/Amazon Single Sign On (authenticate once, access multiple applications - workforce auth.)", singleSign],
 
-["Amazon Inspector", inspector] , 
+// ["#####Security - Prevention", null],
 
-["AWS CloudHSM", cloudhsm],
+["AWS Shield - (DDoS protection service - Layer 3/4)", shield] , 
 
-["AWS Key Management Service", kms],
+["Amazon Web Application firewall (filter, monitor, and block HTTP traffic, DDOS Layer 7)", a_waf],
 
-["ACM(Amazon Certificate Manager)", acm],
+["#####Security - Detection", null],
 
-["Amazon Macie", macie],
+["Amazon Verified Permissions (Fine-grained permissions and authorization for your applications.", verifiedPermissions],
+ 
+["AWS Artifact (On-demand access to AWS’ compliance reports)", artifact], 
 
-["Amazon Single Sign On", singleSign],
+["AWS Audit Manager (Continuously audit your AWS usage to simplify how you assess risk and compliance)", auditManager],
 
-["Amzon WorkSpaces", workspaces]]
+["Amazon Inspector (identify vulnerabilities in your EC2 instances and applications)", inspector] , 
+
+["Amazon Managed Service for Prometheus (managed monitoring for your containerized systems)", prometheus],
+
+["Guard Duty - (Sniffs out intrusions, threats and anomalies in an organization’s AWS environment)", guardDuty], 
+
+["GuardDuty ECS Runtime Monitoring. Centralized, fully-managed Amazon ECS container threat detection—including serverless workloads on AWS Fargate", guardDutyECS],
+
+["Amazon Macie - (Help protects sensitive data in s3)", macie],
+
+["AWS Resource Access Manager (Simple, secure service to share AWS resources)", resourceAccessManager],
+
+["#####Security - Response", null],
+
+["Amazon Detective (Investigate potential security issues)", detective],
+
+["#####Compliance", null],
+
+["AWS Artifact (Central resource for security and compliance reports)", artifact] ,  
+
+["#Security - Management", null],
+
+["AWS Firewall Manager - (Manage all firewalls)", firewallManager],
+
+["AWS CloudHSM - (IaaS, Get dedicated Hardware Security Module for Creating Encryption Keys)", cloudhsm],
+
+["AWS Key Management Service - (PaaS, Create and Control Data Encryption Keys - Fully Managed)", kms],
+
+["Amazon Certificate Manager [ACM] - (Provision and manage SSL/TLS certificates)", acm],
+
+["Amazon Security Lake (Automatically centralize your security data with a few clicks)", securityLake],
+
+["Amazon Secrets Manager", secretManager],
+
+["AWS Security Hub", securityHub]]
 
 aws["AWS_Cost_Management"] = [ 
 
-["AWS Cost and Usage Report (reports and stuff)", costandusage] , 
+["AWS Cost and Usage Report (save billing reports to s3 for analysis)", costandusage] , 
 
-["AWS Budgets (get alerted on usage per budget)", budgets] , 
+["AWS Budgets (set budgets, get alerted budget thresholds)", budgets] , 
 
-["AWS Cost Explorer (visualize, and manage AWS usage)", costexplorer] , 
-["AWS Billing Dashboard", billing]]
+["AWS Cost Explorer (explore cost and usage over past year)", costexplorer] ,
+
+["AWS Billing Dashboard (Access your monthly bills)", billing],
+
+["AWS Activate (Free Resources for Startups)", activate],
+
+["AWS Migration Evalutor", migrationEvaluator]]
 
 aws["Storage"] = [
-["S3 (these are just storage buckets)" , s3],
+["AWS Transfer Family (transfer data)", transferFamily],
 
-["EBS (think hard drives)", ebs],
+["S3 (Cloud storage buckets)" , s3],
 
-["EFS (think dropbox, onedrive -  network file sharing)", efs],
+["EBS (SSD/HDD root volumes for instances)", ebs],
 
-["FSx", fsx] ,
+["EFS (elastic network file sharing between instances)", efs],
 
-["Storage Gateway" , storageGateway],
+["FSx (provisioned file storage service for OS specific use cases)", fsx],
 
-["EC2 Instance Store (think RAM)", instanceStore],
+["Storage Gateway (Hybrid Storage - On-prem + Cloud)" , storageGateway],
 
-["S3 Glacier (Archiving/Backup)", glacier]]
+["AWS Backup (Centralized backup across AWS services)", awsBackup],
+
+["File Gateway (use S3 as a file system)", filegateway],
+
+["Volume Gateway (use S3 as a EBS volume storage - stored/cached)", volumegateway],
+
+["Amazon EBS Snapshots Archive (Archive EBS Snapshots)", ebsSnaps],
+
+["Amazon EFS Archive", efsarchive],
+
+["AWS Elastic Disaster Recovery (Scalable, cost-effective application recovery to AWS)", aws_DisasterRecovery],
+
+["EC2 Instance Store (RAM like storage for EC2 instances)", instanceStore],
+
+["S3 Glacier (Storage for Archiving/Backup)", glacier],
+
+["######Repos", null],
+
+["ECR (Docker Images Repository)", ecr] ,
+
+["AWS Code Artefact - (Software Package repository)", codeArtefact]]
 
 function renderJs () {
 const bodyElement = document.getElementsByTagName("BODY")[0];
@@ -871,7 +1392,6 @@ const bodyElement = document.getElementsByTagName("BODY")[0];
 var headings = Array.from(Object.keys(aws)).map((x,i) => `<h4 onClick=viewContent('${x}',${i})>${x.replace(/_/g," ")}</h4><p id ="content${i}"></p>`).join("")
 
 bodyElement.innerHTML += `<div class="row"><div class="col-lg-5 col-md-12 col-sm-12 overflow-y-auto"><br/>${headings} </div><div id="subcontent" class="col-lg-7 col-md-12 col-sm-12 overflow-y-auto pt-4 pb-2">Click headings to Expand <br/><small><a class="link-opacity-0-hover">aws infrastructure and deployment</a></small></div></div>`
-
 }
 
 function viewContent(heading, paragraph){
